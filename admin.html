@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>質問管理システム v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#3D78F2;--blue-l:#E8F0FF;--purple:#7C3AED;--green:#059669;--green-l:#ECFDF5;--orange:#D97706;--red:#DC2626;--red-l:#FEE2E2;--bg:#F7F8FA;--w:#fff;--t:#1a1a1a;--s:#6B7280;--b:#E5E7EB;--r:12px;--sh:0 1px 3px rgba(0,0,0,.06)}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--t);line-height:1.6;font-size:14px}
+.app{max-width:1280px;margin:0 auto;padding:16px 20px}
+/* Header */
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.hd h1{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.hd h1 em{font-style:normal;background:var(--blue);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px}
+.hd-acts{display:flex;gap:6px;flex-wrap:wrap}
+/* Buttons */
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:.15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.bp{background:var(--blue);color:#fff}.bp:hover{background:#2D5FD6}
+.bg{background:var(--green);color:#fff}
+.br{background:var(--red);color:#fff}
+.bo{background:var(--w);color:var(--t);border:1px solid var(--b)}.bo:hover{background:#F3F4F6}
+.bs{padding:5px 9px;font-size:11px}
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:16px;border-bottom:2px solid var(--b);overflow-x:auto}
+.tab{padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--s);border-bottom:3px solid transparent;margin-bottom:-2px;transition:.2s;white-space:nowrap}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.tab:hover{color:var(--blue)}
+/* Stats */
+.sts{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.st{background:var(--w);border-radius:var(--r);padding:12px 16px;box-shadow:var(--sh);min-width:100px}
+.st .n{font-size:22px;font-weight:700;color:var(--blue)}.st .l{font-size:10px;color:var(--s)}
+/* Filters */
+.flt{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.fi{padding:7px 10px;border:1px solid var(--b);border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:var(--w)}
+.fi:focus{border-color:var(--blue)}
+select.fi{min-width:100px}
+.fi-search{min-width:200px}
+/* Table */
+.tw{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);overflow-x:auto;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#F9FAFB;padding:8px 10px;text-align:left;font-weight:600;font-size:11px;color:var(--s);border-bottom:1px solid var(--b);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--blue)}
+td{padding:8px 10px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
+tr:hover{background:#FAFBFF}
+.qt{max-width:300px;line-height:1.5}
+.bd{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.bd-c{background:var(--blue-l);color:var(--blue)}
+.bd-x{background:var(--green-l);color:var(--green)}
+.bd-on{background:var(--green-l);color:var(--green)}
+.bd-off{background:var(--red-l);color:var(--red)}
+.bd-draft{background:#FEF3C7;color:#92400E}
+.bd-pub{background:var(--green-l);color:var(--green)}
+.bd-sc{background:#F3E8FF;color:var(--purple)}
+.acts{display:flex;gap:3px;white-space:nowrap}
+/* Checkbox in table */
+.cb{width:16px;height:16px;cursor:pointer;accent-color:var(--blue)}
+/* Pagination */
+.pg{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:12px;color:var(--s)}
+.pgb{display:flex;gap:3px}
+.pgn{width:28px;height:28px;border-radius:6px;border:1px solid var(--b);background:var(--w);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px}
+.pgn.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* Modal */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.mo.open{display:flex}
+.md{background:var(--w);border-radius:16px;padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.md h2{font-size:16px;font-weight:700;margin-bottom:16px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--s);margin-bottom:3px}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;border:1px solid var(--b);border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+.fg textarea{height:70px;resize:vertical}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+/* Tab panels */
+.tp{display:none}.tp.on{display:block}
+/* Bulk bar */
+.bulk{background:var(--blue-l);border-radius:var(--r);padding:10px 16px;margin-bottom:12px;display:none;align-items:center;gap:10px;flex-wrap:wrap}
+.bulk.show{display:flex}
+.bulk span{font-size:12px;font-weight:600;color:var(--blue)}
+/* Preview panel */
+.pv{background:var(--w);border-radius:var(--r);padding:20px;box-shadow:var(--sh);margin-bottom:16px}
+.pv h2{font-size:15px;font-weight:700;margin-bottom:14px}
+.pv-form{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.pv-result{background:#F9FAFB;border-radius:8px;padding:14px;max-height:500px;overflow-y:auto}
+.pv-q{padding:8px 10px;border-bottom:1px solid #eee;font-size:12px;display:flex;align-items:center;gap:8px}
+.pv-q:last-child{border-bottom:none}
+.pv-scope{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;white-space:nowrap}
+.pv-common{background:#DBEAFE;color:#1D4ED8}
+.pv-relationship{background:#FCE7F3;color:#BE185D}
+.pv-environment{background:#FEF3C7;color:#92400E}
+/* Analytics */
+.an-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.an-card{background:var(--w);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+.an-card h3{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bar-label{width:90px;font-size:11px;text-align:right;color:var(--s)}
+.bar-track{flex:1;background:#F3F4F6;border-radius:3px;height:16px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:.3s;min-width:2px}
+.bar-val{width:35px;font-size:11px;font-weight:700;text-align:right}
+/* Result type cards */
+.rt-card{background:var(--w);border-radius:var(--r);padding:16px;box-shadow:var(--sh);margin-bottom:12px;border-left:4px solid}
+.rt-card h3{font-size:14px;font-weight:700;margin-bottom:4px}
+.rt-card .rt-desc{font-size:12px;color:var(--s);line-height:1.6;margin-bottom:8px}
+.rt-tips{list-style:none}
+.rt-tips li{font-size:12px;padding:3px 0;display:flex;align-items:flex-start;gap:6px}
+.rt-tips li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.rt-str{display:flex;gap:6px;margin-top:8px}
+.rt-str span{background:var(--blue-l);color:var(--blue);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+@media(max-width:768px){.pv-form,.fr,.fr3,.an-grid{grid-template-columns:1fr}.flt{flex-direction:column}.fi{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="hd">
+  <h1>📋 質問管理システム <em>v2.0</em></h1>
+  <div class="hd-acts">
+    <button class="btn bo" onclick="exportCSV()">📥 CSV出力</button>
+    <button class="btn bo" onclick="$('csvIn').click()">📤 CSV入力</button>
+    <input type="file" id="csvIn" accept=".csv" style="display:none" onchange="importCSV(event)">
+    <button class="btn bo" onclick="exportJSON()">💾 JSON保存</button>
+    <button class="btn bo" onclick="$('jsonIn').click()">📂 JSON読込</button>
+    <input type="file" id="jsonIn" accept=".json" style="display:none" onchange="importJSON(event)">
+  </div>
+</div>
+<div class="tabs">
+  <button class="tab on" onclick="sw('list',this)">📋 質問一覧</button>
+  <button class="tab" onclick="sw('preview',this)">👁 出題プレビュー</button>
+  <button class="tab" onclick="sw('results',this)">🎯 結果タイプ</button>
+  <button class="tab" onclick="sw('analytics',this)">📊 分析</button>
+  <button class="tab" onclick="sw('categories',this)">🏷 カテゴリ</button>
+</div>
+
+<!-- ===== LIST ===== -->
+<div class="tp on" id="p-list">
+<div class="sts" id="stsBar"></div>
+<div class="bulk" id="bulkBar">
+  <span id="bulkCount">0件選択中</span>
+  <button class="btn bo bs" onclick="bulkStatus('published')">公開にする</button>
+  <button class="btn bo bs" onclick="bulkStatus('draft')">下書きにする</button>
+  <button class="btn bo bs" onclick="bulkEnable(true)">有効にする</button>
+  <button class="btn bo bs" onclick="bulkEnable(false)">無効にする</button>
+  <select class="fi" id="bulkCat" style="font-size:11px;padding:4px 8px">
+    <option value="">カテゴリ変更...</option>
+  </select>
+  <button class="btn bo bs" onclick="applyBulkCat()">適用</button>
+  <button class="btn br bs" onclick="bulkDelete()">一括削除</button>
+  <button class="btn bo bs" onclick="clearSelection()">選択解除</button>
+</div>
+<div class="flt">
+  <input class="fi fi-search" type="search" placeholder="🔍 質問を検索..." id="sI" oninput="render()">
+  <select class="fi" id="fCat" onchange="render()"><option value="">全カテゴリ</option></select>
+  <select class="fi" id="fCtx" onchange="render()">
+    <option value="">全対象</option><option value="all">共通</option><option value="work">職場</option>
+    <option value="family">家族</option><option value="school">学校</option><option value="friend">友人</option>
+    <option value="service">ｻｰﾋﾞｽ</option><option value="shared">共同</option>
+  </select>
+  <select class="fi" id="fScope" onchange="render()">
+    <option value="">全スコープ</option><option value="common">共通</option>
+    <option value="relationship">関係</option><option value="environment">環境</option>
+  </select>
+  <select class="fi" id="fStat" onchange="render()">
+    <option value="">全ステータス</option><option value="published">公開</option><option value="draft">下書き</option>
+  </select>
+  <select class="fi" id="fEn" onchange="render()">
+    <option value="">全状態</option><option value="true">有効</option><option value="false">無効</option>
+  </select>
+  <button class="btn bp" onclick="openModal()">＋ 追加</button>
+</div>
+<div class="tw">
+<table>
+<thead><tr>
+  <th style="width:30px"><input type="checkbox" class="cb" id="selAll" onchange="toggleAll(this.checked)"></th>
+  <th onclick="srt('id')" style="width:55px">ID</th>
+  <th onclick="srt('question')">質問文</th>
+  <th onclick="srt('category')" style="width:90px">カテゴリ</th>
+  <th onclick="srt('scope')" style="width:60px">スコープ</th>
+  <th onclick="srt('context_group')" style="width:55px">対象</th>
+  <th onclick="srt('weight')" style="width:40px">重み</th>
+  <th onclick="srt('status')" style="width:55px">公開</th>
+  <th onclick="srt('enabled')" style="width:45px">有効</th>
+  <th style="width:120px">操作</th>
+</tr></thead>
+<tbody id="tBody"></tbody>
+</table>
+</div>
+<div class="pg" id="pgn"></div>
+</div>
+
+<!-- ===== PREVIEW ===== -->
+<div class="tp" id="p-preview">
+<div class="pv">
+  <h2>👁 出題シミュレーション</h2>
+  <p style="font-size:12px;color:var(--s);margin-bottom:14px">条件を選ぶと、実際に出題される質問セット（20〜35問）をプレビューできます。構成：共通40% + 関係30% + 環境30%</p>
+  <div class="pv-form">
+    <div class="fg"><label>コンテキスト</label>
+      <select class="fi" id="pvCtx" onchange="updatePvRelations()" style="width:100%">
+        <option value="work">職場</option><option value="family">家族</option><option value="school">学校</option>
+        <option value="friend">友人</option><option value="service">ｻｰﾋﾞｽ</option><option value="shared">共同生活</option>
+      </select>
+    </div>
+    <div class="fg"><label>私の立場</label>
+      <select class="fi" id="pvMy" style="width:100%"><option value="上司">上司</option><option value="部下">部下</option><option value="同僚">同僚</option><option value="先生">先生</option><option value="親">親</option></select>
+    </div>
+    <div class="fg"><label>相手</label>
+      <select class="fi" id="pvTgt" style="width:100%"><option value="部下">部下</option><option value="上司">上司</option><option value="同僚">同僚</option><option value="子ども">子ども</option></select>
+    </div>
+    <div class="fg"><label>環境</label>
+      <select class="fi" id="pvEnv" style="width:100%"><option value="飲食">飲食店</option><option value="接客">接客</option><option value="オフィス">オフィス</option><option value="工場">工場</option><option value="学校">学校</option><option value="家庭">家庭</option></select>
+    </div>
+  </div>
+  <button class="btn bp" onclick="runPreview()">出題セットを生成</button>
+  <button class="btn bo" onclick="runPreview()" style="margin-left:6px">🔄 再生成</button>
+  <div class="pv-result" id="pvResult" style="margin-top:14px">
+    <p style="text-align:center;color:var(--s);padding:30px 0">条件を選んで「出題セットを生成」を押してください</p>
+  </div>
+</div>
+</div>
+
+<!-- ===== RESULTS ===== -->
+<div class="tp" id="p-results">
+<h2 style="font-size:16px;font-weight:700;margin-bottom:16px">🎯 結果タイプ一覧（5タイプ）</h2>
+<p style="font-size:12px;color:var(--s);margin-bottom:16px">チェック結果で表示される傾向タイプです。病名・診断・確率は一切表示しません。</p>
+<div id="rtCards"></div>
+</div>
+
+<!-- ===== ANALYTICS ===== -->
+<div class="tp" id="p-analytics">
+<div class="sts" style="margin-bottom:16px">
+  <div class="st"><div class="n" id="anTotal">0</div><div class="l">総回答セッション</div></div>
+  <div class="st"><div class="n" id="anComplete">0%</div><div class="l">完了率</div></div>
+  <div class="st"><div class="n" id="anDrop">0%</div><div class="l">離脱率</div></div>
+  <div class="st"><div class="n" id="anAvgQ">0</div><div class="l">平均回答数</div></div>
+</div>
+<div class="an-grid" id="anGrid"></div>
+</div>
+
+<!-- ===== CATEGORIES ===== -->
+<div class="tp" id="p-categories">
+<div class="pv">
+  <h2>🏷 カテゴリ管理</h2>
+  <p style="font-size:12px;color:var(--s);margin-bottom:14px">カテゴリの一覧と各カテゴリの質問数を確認・編集できます。</p>
+  <div id="catList"></div>
+  <div style="margin-top:14px;display:flex;gap:8px">
+    <input class="fi" id="newCat" placeholder="新しいカテゴリ名">
+    <button class="btn bp" onclick="addCategory()">追加</button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="modal" onclick="if(event.target===this)closeModal()">
+<div class="md">
+  <h2 id="mTitle">質問追加</h2>
+  <input type="hidden" id="eId">
+  <div class="fg"><label>質問文 *</label><textarea id="fQ" placeholder="観察可能な行動を具体的に記述"></textarea></div>
+  <div class="fr">
+    <div class="fg"><label>カテゴリ</label><select id="fCt"></select></div>
+    <div class="fg"><label>サブカテゴリ</label><input id="fSc" placeholder="例：曖昧指示"></div>
+  </div>
+  <div class="fr3">
+    <div class="fg"><label>スコープ</label><select id="fSp"><option value="common">共通</option><option value="relationship">関係</option><option value="environment">環境</option></select></div>
+    <div class="fg"><label>コンテキスト</label><select id="fCx"><option value="all">共通</option><option value="work">職場</option><option value="family">家族</option><option value="school">学校</option><option value="friend">友人</option><option value="service">ｻｰﾋﾞｽ</option><option value="shared">共同</option></select></div>
+    <div class="fg"><label>環境</label><input id="fEv" value="all" placeholder="all / 飲食 / 接客"></div>
+  </div>
+  <div class="fr3">
+    <div class="fg"><label>私の立場</label><input id="fMr" value="all"></div>
+    <div class="fg"><label>相手の立場</label><input id="fTr" value="all"></div>
+    <div class="fg"><label>重み (1-5)</label><input id="fWt" type="number" min="1" max="5" value="3"></div>
+  </div>
+  <div class="fr3">
+    <div class="fg"><label>ステータス</label><select id="fSt"><option value="published">公開</option><option value="draft">下書き</option></select></div>
+    <div class="fg"><label>有効/無効</label><select id="fEn"><option value="true">有効</option><option value="false">無効</option></select></div>
+    <div class="fg"><label>回答選択肢</label><input id="fAo" value="よくある,少しある,ほぼない"></div>
+  </div>
+  <div class="fg"><label>結果マッピング（JSON）</label><textarea id="fRm" style="height:50px;font-family:monospace;font-size:11px"></textarea></div>
+  <div class="ma">
+    <button class="btn bo" onclick="closeModal()">キャンセル</button>
+    <button class="btn bp" onclick="saveQ()">保存</button>
+  </div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let Q=[], sel=new Set(), sc='display_order', sd=1, cp=1, PS=25;
+const CL={all:'共通',work:'職場',family:'家族',school:'学校',friend:'友人',service:'ｻｰﾋﾞｽ',shared:'共同'};
+const SL={common:'共通',relationship:'関係',environment:'環境'};
+let RESULT_TYPES=__RESULT_TYPES__;
+let analytics={sessions:[],perQuestion:{}};
+
+function init(){
+  const s=localStorage.getItem('bt_q2');
+  Q=s?JSON.parse(s):__QUESTIONS__;
+  const a=localStorage.getItem('bt_analytics');
+  if(a)analytics=JSON.parse(a);
+  buildCatFilter();render();renderRT();renderAnalytics();renderCats();
+}
+function save(){localStorage.setItem('bt_q2',JSON.stringify(Q))}
+function sw(n,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.tp').forEach(p=>p.classList.remove('on'));el.classList.add('on');$('p-'+n).classList.add('on');if(n==='analytics')renderAnalytics();if(n==='categories')renderCats()}
+
+// ===== TABLE =====
+function render(){
+  let f=getFiltered();
+  f.sort((a,b)=>{let va=a[sc],vb=b[sc];if(typeof va==='string')va=va.toLowerCase();if(typeof vb==='string')vb=vb.toLowerCase();return va<vb?-1*sd:va>vb?sd:0});
+  const total=f.length,tp=Math.ceil(total/PS)||1;
+  if(cp>tp)cp=tp;
+  const start=(cp-1)*PS,page=f.slice(start,start+PS);
+  const en=Q.filter(q=>q.enabled).length,pub=Q.filter(q=>q.status==='published').length;
+  $('stsBar').innerHTML=`<div class="st"><div class="n">${Q.length}</div><div class="l">全質問</div></div><div class="st"><div class="n">${pub}</div><div class="l">公開</div></div><div class="st"><div class="n">${en}</div><div class="l">有効</div></div><div class="st"><div class="n">${f.length}</div><div class="l">表示中</div></div><div class="st"><div class="n">${new Set(Q.map(q=>q.category)).size}</div><div class="l">カテゴリ</div></div>`;
+  $('tBody').innerHTML=page.map(q=>`<tr>
+    <td><input type="checkbox" class="cb" ${sel.has(q.id)?'checked':''} onchange="toggleSel('${q.id}',this.checked)"></td>
+    <td><code style="font-size:11px">${q.id}</code></td>
+    <td class="qt">${q.question}</td>
+    <td><span class="bd bd-c">${q.category}</span></td>
+    <td><span class="bd bd-sc">${SL[q.scope]||q.scope}</span></td>
+    <td><span class="bd bd-x">${CL[q.context_group]||q.context_group}</span></td>
+    <td style="text-align:center;font-size:11px">${'★'.repeat(q.weight)}</td>
+    <td><span class="bd ${q.status==='published'?'bd-pub':'bd-draft'}">${q.status==='published'?'公開':'下書'}</span></td>
+    <td><span class="bd ${q.enabled?'bd-on':'bd-off'}">${q.enabled?'有効':'無効'}</span></td>
+    <td class="acts">
+      <button class="btn bo bs" onclick="openModal('${q.id}')">✏️</button>
+      <button class="btn bo bs" onclick="dupQ('${q.id}')" title="複製">📋</button>
+      <button class="btn bo bs" onclick="togEn('${q.id}')">${q.enabled?'⏸':'▶'}</button>
+      <button class="btn bo bs" onclick="delQ('${q.id}')">🗑</button>
+    </td>
+  </tr>`).join('');
+  let ph=`<span>${start+1}〜${Math.min(start+PS,total)} / ${total}件</span><div class="pgb">`;
+  for(let i=1;i<=tp;i++)ph+=`<button class="pgn ${i===cp?'on':''}" onclick="cp=${i};render()">${i}</button>`;
+  $('pgn').innerHTML=ph+'</div>';
+  updateBulk();
+}
+function getFiltered(){
+  const s=$('sI').value.toLowerCase(),cat=$('fCat').value,ctx=$('fCtx').value,scope=$('fScope').value,stat=$('fStat').value,en=$('fEn').value;
+  return Q.filter(q=>{
+    if(s&&!q.question.toLowerCase().includes(s)&&!q.id.toLowerCase().includes(s)&&!(q.subcategory||'').toLowerCase().includes(s))return false;
+    if(cat&&q.category!==cat)return false;
+    if(ctx&&q.context_group!==ctx)return false;
+    if(scope&&q.scope!==scope)return false;
+    if(stat&&q.status!==stat)return false;
+    if(en!==''&&String(q.enabled)!==en)return false;
+    return true;
+  });
+}
+function srt(c){if(sc===c)sd*=-1;else{sc=c;sd=1}render()}
+function buildCatFilter(){
+  const cats=[...new Set(Q.map(q=>q.category))].sort();
+  $('fCat').innerHTML='<option value="">全カテゴリ</option>'+cats.map(c=>`<option>${c}</option>`).join('');
+  $('fCt').innerHTML=cats.map(c=>`<option>${c}</option>`).join('');
+  $('bulkCat').innerHTML='<option value="">カテゴリ変更...</option>'+cats.map(c=>`<option>${c}</option>`).join('');
+}
+
+// ===== SELECTION =====
+function toggleSel(id,ch){if(ch)sel.add(id);else sel.delete(id);updateBulk()}
+function toggleAll(ch){const f=getFiltered();f.forEach(q=>{if(ch)sel.add(q.id);else sel.delete(q.id)});render()}
+function clearSelection(){sel.clear();$('selAll').checked=false;render()}
+function updateBulk(){$('bulkBar').classList.toggle('show',sel.size>0);$('bulkCount').textContent=sel.size+'件選択中'}
+
+// ===== BULK =====
+function bulkStatus(s){sel.forEach(id=>{const q=Q.find(x=>x.id===id);if(q)q.status=s});save();render()}
+function bulkEnable(v){sel.forEach(id=>{const q=Q.find(x=>x.id===id);if(q)q.enabled=v});save();render()}
+function bulkDelete(){if(!confirm(sel.size+'件を削除しますか？'))return;Q=Q.filter(q=>!sel.has(q.id));sel.clear();save();buildCatFilter();render()}
+function applyBulkCat(){const c=$('bulkCat').value;if(!c)return;sel.forEach(id=>{const q=Q.find(x=>x.id===id);if(q)q.category=c});save();render()}
+
+// ===== CRUD =====
+function openModal(id){
+  $('modal').classList.add('open');
+  buildCatFilter();
+  if(id){
+    const q=Q.find(x=>x.id===id);
+    $('mTitle').textContent='質問編集';$('eId').value=id;
+    $('fQ').value=q.question;$('fCt').value=q.category;$('fSc').value=q.subcategory||'';
+    $('fSp').value=q.scope||'common';$('fCx').value=q.context_group;$('fEv').value=q.environment;
+    $('fMr').value=q.my_role;$('fTr').value=q.target_role;$('fWt').value=q.weight;
+    $('fSt').value=q.status||'published';$('fEn').value=String(q.enabled);
+    $('fAo').value=(q.answer_options||['よくある','少しある','ほぼない']).join(',');
+    $('fRm').value=JSON.stringify(q.result_mapping||{},null,1);
+  }else{
+    $('mTitle').textContent='質問追加';$('eId').value='';
+    $('fQ').value='';$('fSc').value='';$('fSp').value='common';$('fCx').value='all';
+    $('fEv').value='all';$('fMr').value='all';$('fTr').value='all';$('fWt').value='3';
+    $('fSt').value='published';$('fEn').value='true';
+    $('fAo').value='よくある,少しある,ほぼない';$('fRm').value='{}';
+  }
+}
+function closeModal(){$('modal').classList.remove('open')}
+function saveQ(){
+  const id=$('eId').value,qt=$('fQ').value.trim();
+  if(!qt){alert('質問文を入力してください');return}
+  let rm={};try{rm=JSON.parse($('fRm').value)}catch{}
+  const d={question:qt,category:$('fCt').value,subcategory:$('fSc').value,scope:$('fSp').value,
+    context_group:$('fCx').value,environment:$('fEv').value||'all',my_role:$('fMr').value||'all',
+    target_role:$('fTr').value||'all',weight:parseInt($('fWt').value)||3,
+    status:$('fSt').value,enabled:$('fEn').value==='true',
+    answer_options:$('fAo').value.split(',').map(s=>s.trim()),result_mapping:rm};
+  if(id){Object.assign(Q.find(x=>x.id===id),d)}
+  else{const mx=Q.reduce((m,q)=>{const n=parseInt(q.id.replace('Q',''));return n>m?n:m},0);
+    d.id='Q'+String(mx+1).padStart(3,'0');d.display_order=Q.length+1;Q.push(d)}
+  save();buildCatFilter();render();closeModal();
+}
+function dupQ(id){
+  const o=Q.find(x=>x.id===id);if(!o)return;
+  const mx=Q.reduce((m,q)=>{const n=parseInt(q.id.replace('Q',''));return n>m?n:m},0);
+  const nq={...JSON.parse(JSON.stringify(o)),id:'Q'+String(mx+1).padStart(3,'0'),display_order:Q.length+1};
+  Q.push(nq);save();render();
+}
+function togEn(id){const q=Q.find(x=>x.id===id);q.enabled=!q.enabled;save();render()}
+function delQ(id){if(!confirm(id+' を削除しますか？'))return;Q=Q.filter(q=>q.id!==id);sel.delete(id);save();render()}
+
+// ===== PREVIEW =====
+function runPreview(){
+  const ctx=$('pvCtx').value,my=$('pvMy').value,tgt=$('pvTgt').value,env=$('pvEnv').value;
+  const pool=Q.filter(q=>q.enabled&&q.status==='published');
+  // Common: scope=common OR context_group=all
+  const common=pool.filter(q=>q.scope==='common');
+  // Relationship: matches context
+  const rel=pool.filter(q=>q.scope==='relationship'&&(q.context_group===ctx||q.context_group==='all')&&(q.my_role==='all'||q.my_role===my)&&(q.target_role==='all'||q.target_role===tgt));
+  // Environment: matches env
+  const env_q=pool.filter(q=>q.scope==='environment'||(q.environment!=='all'&&env.includes(q.environment)));
+
+  const totalTarget=Math.min(28,Math.max(20,common.length));
+  const nCommon=Math.round(totalTarget*0.4);
+  const nRel=Math.round(totalTarget*0.3);
+  const nEnv=totalTarget-nCommon-nRel;
+
+  const pick=(arr,n)=>{const s=[...arr].sort(()=>Math.random()-.5);return s.slice(0,Math.min(n,s.length))};
+  const selected=[...pick(common,nCommon),...pick(rel,nRel),...pick(env_q,nEnv)];
+  // Remove duplicates
+  const seen=new Set(),final=[];
+  selected.forEach(q=>{if(!seen.has(q.id)){seen.add(q.id);final.push(q)}});
+
+  $('pvResult').innerHTML=`<div style="padding:8px 0 12px;font-size:12px;color:var(--s)">
+    <strong>出題数: ${final.length}問</strong>（共通 ${pick(common,nCommon).length} + 関係 ${pick(rel,nRel).length} + 環境 ${pick(env_q,nEnv).length}）
+    ／ 条件: ${CL[ctx]} → ${my} → ${tgt} → ${env}
+  </div>`+final.map((q,i)=>`<div class="pv-q">
+    <span style="color:var(--s);min-width:20px">${i+1}.</span>
+    <span class="pv-scope pv-${q.scope}">${SL[q.scope]}</span>
+    <span>${q.question}</span>
+    <span class="bd bd-c" style="margin-left:auto">${q.category}</span>
+  </div>`).join('');
+}
+
+// ===== RESULT TYPES =====
+function renderRT(){
+  $('rtCards').innerHTML=RESULT_TYPES.map(rt=>`
+    <div class="rt-card" style="border-left-color:${rt.color}">
+      <h3>${rt.icon} ${rt.name}</h3>
+      <div style="font-size:12px;color:var(--s);margin-bottom:4px">${rt.summary}</div>
+      <div class="rt-desc">${rt.description}</div>
+      <strong style="font-size:11px">接し方：</strong>
+      <ul class="rt-tips">${rt.tips.map(t=>`<li>${t}</li>`).join('')}</ul>
+      <div class="rt-str">${rt.strengths.map(s=>`<span>${s}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+// ===== ANALYTICS =====
+function renderAnalytics(){
+  const s=analytics.sessions||[];
+  const total=s.length;
+  const completed=s.filter(x=>x.completed).length;
+  const dropped=total-completed;
+  const avgQ=total?Math.round(s.reduce((a,x)=>a+x.questions_answered,0)/total):0;
+  $('anTotal').textContent=total;
+  $('anComplete').textContent=total?Math.round(completed/total*100)+'%':'0%';
+  $('anDrop').textContent=total?Math.round(dropped/total*100)+'%':'0%';
+  $('anAvgQ').textContent=avgQ;
+
+  // Category distribution
+  const byCat={};Q.forEach(q=>{byCat[q.category]=(byCat[q.category]||0)+1});
+  const byScope={common:0,relationship:0,environment:0};Q.forEach(q=>{byScope[q.scope]=(byScope[q.scope]||0)+1});
+  const byCtx={};Q.forEach(q=>{byCtx[q.context_group]=(byCtx[q.context_group]||0)+1});
+  const byStatus={published:0,draft:0};Q.forEach(q=>{byStatus[q.status]=(byStatus[q.status]||0)+1});
+
+  const makeBar=(data,color,labels)=>Object.entries(data).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div class="bar-row"><span class="bar-label">${labels?labels[k]||k:k}</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${v/Q.length*100}%;background:${color}"></div></div>
+    <span class="bar-val">${v}</span></div>`).join('');
+
+  $('anGrid').innerHTML=`
+    <div class="an-card"><h3>📊 カテゴリ別</h3>${makeBar(byCat,'var(--blue)')}</div>
+    <div class="an-card"><h3>🎯 スコープ別</h3>${makeBar(byScope,'var(--purple)',SL)}
+      <div style="margin-top:10px;padding:10px;background:#F9FAFB;border-radius:8px;font-size:11px;color:var(--s)">
+        目標配分：共通40% / 関係30% / 環境30%<br>
+        現在：共通${Math.round((byScope.common||0)/Q.length*100)}% / 関係${Math.round((byScope.relationship||0)/Q.length*100)}% / 環境${Math.round((byScope.environment||0)/Q.length*100)}%
+      </div>
+    </div>
+    <div class="an-card"><h3>🏷 コンテキスト別</h3>${makeBar(byCtx,'var(--green)',CL)}</div>
+    <div class="an-card"><h3>📋 ステータス別</h3>${makeBar(byStatus,'var(--orange)',{published:'公開',draft:'下書き'})}
+      <div style="margin-top:10px;padding:10px;background:#F9FAFB;border-radius:8px;font-size:11px;color:var(--s)">
+        回答データはサイト公開後に蓄積されます。<br>完了率・離脱率・質問別回答率はここに表示されます。
+      </div>
+    </div>
+  `;
+}
+
+// ===== CATEGORIES =====
+function renderCats(){
+  const cats={};Q.forEach(q=>{cats[q.category]=(cats[q.category]||0)+1});
+  $('catList').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b)">
+      <span class="bd bd-c">${k}</span>
+      <span style="flex:1;font-size:13px;font-weight:600">${v}問</span>
+      <button class="btn bo bs" onclick="renameCat('${k}')">名前変更</button>
+    </div>`).join('');
+}
+function addCategory(){const n=$('newCat').value.trim();if(!n)return;$('newCat').value='';buildCatFilter();renderCats();alert('カテゴリ「'+n+'」を追加しました。質問追加時に選択できます。')}
+function renameCat(old){const n=prompt('新しいカテゴリ名:',old);if(!n||n===old)return;Q.forEach(q=>{if(q.category===old)q.category=n});save();buildCatFilter();render();renderCats()}
+
+// ===== CSV =====
+function exportCSV(){
+  const h=['id','question','category','subcategory','scope','context_group','my_role','target_role','environment','weight','display_order','status','enabled'];
+  const rows=Q.map(q=>h.map(k=>{let v=q[k];if(typeof v==='string'&&(v.includes(',')||v.includes('"')||v.includes('\n')))v='"'+v.replace(/"/g,'""')+'"';return v}).join(','));
+  dl('\uFEFF'+h.join(',')+'\n'+rows.join('\n'),'questions.csv','text/csv;charset=utf-8');
+}
+function importCSV(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=function(ev){
+    const lines=ev.target.result.split('\n').filter(l=>l.trim());
+    const h=lines[0].split(',').map(s=>s.trim().replace(/^\uFEFF/,''));
+    const imp=[];
+    for(let i=1;i<lines.length;i++){const v=parseCSV(lines[i]);const o={};h.forEach((k,j)=>{let val=v[j]||'';if(k==='weight'||k==='display_order')val=parseInt(val)||0;if(k==='enabled')val=val==='true'||val==='TRUE';o[k]=val});if(o.id&&o.question)imp.push(o)}
+    if(imp.length&&confirm(imp.length+'件インポートしますか？')){
+      const ex=new Set(Q.map(q=>q.id));let a=0,u=0;
+      imp.forEach(q=>{if(!q.scope)q.scope='common';if(!q.status)q.status='published';if(!q.result_mapping)q.result_mapping={};if(!q.answer_options)q.answer_options=['よくある','少しある','ほぼない'];if(ex.has(q.id)){const i=Q.findIndex(x=>x.id===q.id);Q[i]=q;u++}else{Q.push(q);a++}});
+      save();buildCatFilter();render();alert(`追加:${a} 更新:${u}`);
+    }
+  };r.readAsText(f);e.target.value='';
+}
+function parseCSV(l){const r=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(q){if(ch==='"'&&l[i+1]==='"'){c+='"';i++}else if(ch==='"')q=false;else c+=ch}else{if(ch==='"')q=true;else if(ch===','){r.push(c.trim());c=''}else c+=ch}}r.push(c.trim());return r}
+function exportJSON(){dl(JSON.stringify(Q,null,2),'questions.json','application/json')}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);if(Array.isArray(d)&&confirm(d.length+'件で上書きしますか？')){Q=d;save();buildCatFilter();render();alert(d.length+'件読み込み')}}catch(er){alert('エラー:'+er.message)}};r.readAsText(f);e.target.value='';
+}
+function dl(c,fn,t){const b=new Blob([c],{type:t});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u)}
+
+// ===== INIT =====
+const __QUESTIONS__=[{"id": "Q001", "question": "口頭で3つ以上の指示を出すと、最初の1つだけ実行して残りを忘れる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "複数指示", "weight": 5, "display_order": 1, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q002", "question": "「適当にやっておいて」と伝えると、何をすればいいかわからず固まる", "context_group": "work", "my_role": "上司", "target_role": "部下", "environment": "all", "category": "指示理解", "subcategory": "曖昧指示", "weight": 5, "display_order": 2, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q003", "question": "メモを取らずに聞いていて、あとで「聞いていない」と言う", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "記憶保持", "weight": 4, "display_order": 3, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q004", "question": "作業手順を一度教えても、翌日には最初から説明し直す必要がある", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "手順記憶", "weight": 4, "display_order": 4, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q005", "question": "書面やマニュアルで渡すと正確にできるが、口頭指示だとミスが増える", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "入力経路", "weight": 5, "display_order": 5, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q006", "question": "「なるべく早く」と言うと、期限がわからず手をつけられない", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "曖昧指示", "weight": 4, "display_order": 6, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q007", "question": "「ちゃんと片付けて」と言っても、何がどの状態になれば完了かわからない", "context_group": "family", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "完了基準", "weight": 4, "display_order": 7, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q008", "question": "例え話やたとえで説明すると、たとえの方に注目してしまう", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "比喩理解", "weight": 3, "display_order": 8, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q009", "question": "「みんなやってるよ」と言っても、具体的に誰がやっているか聞き返す", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "抽象表現", "weight": 3, "display_order": 9, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q010", "question": "長い説明を聞いているうちに、最初に言われたことを忘れてしまう", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "ワーキングメモリ", "weight": 4, "display_order": 10, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q011", "question": "質問の意図がわからず、的外れな回答をすることがある", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "質問理解", "weight": 4, "display_order": 11, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q012", "question": "指示の途中で別の話を始め、元の指示に戻れなくなる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "指示理解", "subcategory": "注意維持", "weight": 3, "display_order": 12, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q013", "question": "急なシフト変更を伝えると、パニックになったり強く動揺する", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "接客", "category": "変化対応", "subcategory": "予定変更", "weight": 5, "display_order": 13, "enabled": true, "status": "published", "scope": "environment", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q014", "question": "毎日同じ席・同じ順番で作業しないと落ち着かない", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "変化対応", "subcategory": "ルーティン", "weight": 4, "display_order": 14, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q015", "question": "旅行や外出の予定が変わると、極端に不機嫌になる", "context_group": "family", "my_role": "all", "target_role": "all", "environment": "all", "category": "変化対応", "subcategory": "予定変更", "weight": 4, "display_order": 15, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q016", "question": "いつもと違うルートで通勤・通学すると不安になる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "変化対応", "subcategory": "環境変化", "weight": 3, "display_order": 16, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q017", "question": "メニュー変更や新商品対応のとき、通常より明らかに時間がかかる", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "飲食", "category": "変化対応", "subcategory": "新規対応", "weight": 4, "display_order": 17, "enabled": true, "status": "published", "scope": "environment", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q018", "question": "引っ越しや模様替えの後、数日間落ち着きがなくなる", "context_group": "family", "my_role": "all", "target_role": "all", "environment": "all", "category": "変化対応", "subcategory": "環境変化", "weight": 3, "display_order": 18, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q019", "question": "「今日は特別にこうして」と言うと、翌日もその方法を続けようとする", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "変化対応", "subcategory": "例外処理", "weight": 4, "display_order": 19, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q020", "question": "担任やチーム編成が変わると、しばらく本来の力を発揮できない", "context_group": "school", "my_role": "all", "target_role": "all", "environment": "all", "category": "変化対応", "subcategory": "人的変化", "weight": 4, "display_order": 20, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q021", "question": "行事やイベントの前日から極端にソワソワする", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "変化対応", "subcategory": "見通し不安", "weight": 3, "display_order": 21, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q022", "question": "手順が変わったとき、前のやり方に戻そうとして抵抗する", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "変化対応", "subcategory": "手順固執", "weight": 4, "display_order": 22, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"変化予測支援型": 3, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q023", "question": "会話中に目を合わせるのが苦手で、視線を外しがちになる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "非言語", "weight": 4, "display_order": 23, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q024", "question": "冗談や皮肉を言葉どおりに受け取ってしまう", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "言外の意味", "weight": 5, "display_order": 24, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q025", "question": "話している途中で突然別の話題に飛び、元の話に戻らない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "話題維持", "weight": 4, "display_order": 25, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q026", "question": "自分の興味のある話題になると、相手の反応に関係なく話し続ける", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "一方的会話", "weight": 4, "display_order": 26, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q027", "question": "「空気を読んで」と言われても、何が求められているかわからない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "暗黙の了解", "weight": 5, "display_order": 27, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q028", "question": "報告・連絡・相談のタイミングがずれていることが多い", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "報連相", "weight": 4, "display_order": 28, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q029", "question": "電話対応で、相手の話を聞きながらメモを取ることができない", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "同時処理", "weight": 4, "display_order": 29, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q030", "question": "「ありがとう」「ごめんなさい」を言うタイミングがずれている", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "社会的応答", "weight": 3, "display_order": 30, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q031", "question": "声の大きさの調整が苦手で、場面にそぐわない音量で話す", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "音量調整", "weight": 3, "display_order": 31, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q032", "question": "相手の表情から感情を読み取るのが苦手", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "表情認識", "weight": 4, "display_order": 32, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q033", "question": "言いたいことをうまく言葉にまとめられず、話がまとまらない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "言語化", "weight": 4, "display_order": 33, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q034", "question": "雑談やフリートークの場面で何を話せばいいかわからず黙る", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "雑談", "weight": 3, "display_order": 34, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q035", "question": "吃ることがあり、特に緊張する場面で言葉が出にくくなる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "発話困難", "weight": 4, "display_order": 35, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q036", "question": "会議中に発言のタイミングがつかめず、割り込むか黙るかの両極端", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "発言タイミング", "weight": 3, "display_order": 36, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q037", "question": "LINEやメールの文面から相手の感情を読み取れず、トラブルになる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "コミュニケーション", "subcategory": "テキスト理解", "weight": 3, "display_order": 37, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q038", "question": "作業中にちょっとした物音で集中が切れ、元の作業に戻れなくなる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "注意散漫", "weight": 4, "display_order": 38, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q039", "question": "好きなことには何時間でも集中するが、興味のないことは数分で飽きる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "過集中", "weight": 5, "display_order": 39, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q040", "question": "ケアレスミスが多く、確認しても見落とす", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "不注意ミス", "weight": 4, "display_order": 40, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q041", "question": "忘れ物・なくし物が非常に多い", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "物品管理", "weight": 4, "display_order": 41, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q042", "question": "締め切りや約束の時間を守れないことが頻繁にある", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "時間管理", "weight": 5, "display_order": 42, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q043", "question": "同時に2つの作業を頼むと、どちらも中途半端になる", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "マルチタスク", "weight": 4, "display_order": 43, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q044", "question": "書類やデスクの整理が極端に苦手で、必要な物がすぐ見つからない", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "整理整頓", "weight": 3, "display_order": 44, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q045", "question": "授業や会議の最中にぼんやりして、内容を聞いていないことがある", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "注意持続", "weight": 4, "display_order": 45, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q046", "question": "やるべきことを先延ばしにし、ギリギリまで手をつけない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "先延ばし", "weight": 3, "display_order": 46, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q047", "question": "一つの作業に没頭すると、呼びかけても気づかないことがある", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "過集中", "weight": 4, "display_order": 47, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q048", "question": "手順の途中で別のことを思い出し、元の手順に戻れなくなる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "注意・集中", "subcategory": "作業中断", "weight": 3, "display_order": 48, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q049", "question": "蛍光灯のちらつきや明るさに敏感で、目を細めたり避けたりする", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感覚過敏", "subcategory": "光", "weight": 4, "display_order": 49, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q050", "question": "周囲の話し声やBGMがあると、目の前の人の声が聞き取れない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感覚過敏", "subcategory": "音", "weight": 5, "display_order": 50, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q051", "question": "服のタグや縫い目を異常に気にして、着られる服が限られている", "context_group": "family", "my_role": "all", "target_role": "all", "environment": "all", "category": "感覚過敏", "subcategory": "触覚", "weight": 3, "display_order": 51, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q052", "question": "特定の食感や匂いの食べ物を極端に嫌い、食べられるものが少ない", "context_group": "family", "my_role": "all", "target_role": "all", "environment": "all", "category": "感覚過敏", "subcategory": "味覚・嗅覚", "weight": 3, "display_order": 52, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q053", "question": "人混みや満員電車に入ると、極端に疲弊したり体調を崩す", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感覚過敏", "subcategory": "人混み", "weight": 4, "display_order": 53, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q054", "question": "エアコンの風や室温の変化に対して、周囲より強く反応する", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "感覚過敏", "subcategory": "温度", "weight": 3, "display_order": 54, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q055", "question": "急に触られると極端に驚いたり、不快な反応を示す", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感覚過敏", "subcategory": "触覚", "weight": 4, "display_order": 55, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q056", "question": "飲食店の厨房音やオーダーの呼び出し音がつらそうにしている", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "飲食", "category": "感覚過敏", "subcategory": "音", "weight": 4, "display_order": 56, "enabled": true, "status": "published", "scope": "environment", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q057", "question": "特定の匂い（洗剤、香水など）に対して強い不快感を示す", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感覚過敏", "subcategory": "嗅覚", "weight": 3, "display_order": 57, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"環境最適化型": 3, "変化予測支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q058", "question": "決まった手順を飛ばされると、最初からやり直そうとする", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "手順固執", "weight": 5, "display_order": 58, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q059", "question": "自分のやり方に強くこだわり、他の方法を提案すると受け入れない", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "方法固執", "weight": 4, "display_order": 59, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q060", "question": "物の置き場所が変わると、すぐに気づいて不安になる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "環境秩序", "weight": 3, "display_order": 60, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q061", "question": "特定のことに異常に詳しく、その話題になると止まらない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "特定興味", "weight": 3, "display_order": 61, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q062", "question": "食事のメニューや食べる順番が毎日ほぼ同じ", "context_group": "family", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "食事ルーティン", "weight": 3, "display_order": 62, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q063", "question": "「80点でいいよ」と言っても、100点を目指して時間をかけすぎる", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "完璧主義", "weight": 4, "display_order": 63, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q064", "question": "ルールや規則に非常に厳格で、例外を認めない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "規則厳守", "weight": 4, "display_order": 64, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q065", "question": "書類の書式やフォーマットの小さなズレが気になって修正し続ける", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "細部固執", "weight": 3, "display_order": 65, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q066", "question": "同じ服を毎日着たがる、もしくは服の選択に異常に時間がかかる", "context_group": "family", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "衣服", "weight": 3, "display_order": 66, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q067", "question": "「だいたいでいいよ」が通じず、正確な数字や基準を求める", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "こだわり", "subcategory": "正確性要求", "weight": 4, "display_order": 67, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 3, "変化予測支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q068", "question": "小さなミスを指摘されると、極端に落ち込んで数日引きずる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "過敏反応", "weight": 5, "display_order": 68, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q069", "question": "怒りのスイッチが入ると、自分では止められない様子がある", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "怒り制御", "weight": 5, "display_order": 69, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q070", "question": "楽しいことのあとに極端にテンションが下がり、切り替えられない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "気分変動", "weight": 3, "display_order": 70, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q071", "question": "不安を感じると、同じ質問を何度も繰り返す", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "不安対処", "weight": 4, "display_order": 71, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q072", "question": "注意されると泣いてしまい、話し合いが続けられなくなる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "感情溢れ", "weight": 4, "display_order": 72, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q073", "question": "嬉しいときや興奮したとき、体を揺らしたり手をバタバタさせる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "身体表現", "weight": 3, "display_order": 73, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q074", "question": "ストレスが溜まると、爪を噛む・髪を触るなどの反復動作が増える", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "自己調整行動", "weight": 3, "display_order": 74, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q075", "question": "周りの人の感情に影響されやすく、誰かが怒っていると自分も不安定になる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "感情伝染", "weight": 4, "display_order": 75, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q076", "question": "「頑張れ」と励ますと、逆にプレッシャーで動けなくなる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "感情調整", "subcategory": "プレッシャー", "weight": 4, "display_order": 76, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q077", "question": "グループの中で自分の役割がわからず、ぼんやり立っていることがある", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "社会性", "subcategory": "役割認識", "weight": 4, "display_order": 77, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q078", "question": "順番を待つことが苦手で、割り込んだり離脱したりする", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "社会性", "subcategory": "順番待ち", "weight": 3, "display_order": 78, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q079", "question": "初対面の人に対して距離感がつかめず、急に馴れ馴れしくなる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "社会性", "subcategory": "対人距離", "weight": 3, "display_order": 79, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q080", "question": "「ありがとう」と言われても、相手が本当に喜んでいるかわからない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "社会性", "subcategory": "感情推測", "weight": 3, "display_order": 80, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q081", "question": "チームで動くとき、自分だけ違う方向に進んでいることがある", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "社会性", "subcategory": "協調行動", "weight": 4, "display_order": 81, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q082", "question": "接客中にお客様の要望を読み取れず、的外れな対応をする", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "接客", "category": "社会性", "subcategory": "ニーズ理解", "weight": 4, "display_order": 82, "enabled": true, "status": "published", "scope": "environment", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q083", "question": "悪気なく相手が傷つくことを言ってしまい、後でトラブルになる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "社会性", "subcategory": "発言配慮", "weight": 5, "display_order": 83, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q084", "question": "集団行動のとき、一人だけ違うタイミングで動いてしまう", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "社会性", "subcategory": "同調行動", "weight": 3, "display_order": 84, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q085", "question": "人に助けを求めることができず、一人で抱え込んで爆発する", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "社会性", "subcategory": "援助要請", "weight": 5, "display_order": 85, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"対話調整型": 3, "情報整理支援型": 1}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q086", "question": "同じ種類のミスを何度注意しても繰り返す", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "反復ミス", "weight": 5, "display_order": 86, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q087", "question": "体を常に動かしていて（貧乏ゆすり、ペン回しなど）、じっとしていられない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "多動", "weight": 4, "display_order": 87, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q088", "question": "思いついたら後先考えずに行動してしまい、結果を考えない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "衝動性", "weight": 4, "display_order": 88, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q089", "question": "朝の支度に異常に時間がかかり、遅刻が常態化している", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "段取り", "weight": 4, "display_order": 89, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q090", "question": "食事中に席を立ったり、食べるのに極端に時間がかかる", "context_group": "family", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "食事行動", "weight": 3, "display_order": 90, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q091", "question": "レジ対応や電話応対など、テンポを求められる作業で固まる", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "接客", "category": "行動パターン", "subcategory": "処理速度", "weight": 4, "display_order": 91, "enabled": true, "status": "published", "scope": "environment", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q092", "question": "一度始めた作業を切り上げられず、次の予定に遅れる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "切替困難", "weight": 4, "display_order": 92, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q093", "question": "利き手でない方の手や指の動きがぎこちなく、細かい作業が苦手", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "協調運動", "weight": 3, "display_order": 93, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q094", "question": "予定を詰め込みすぎて、結局どれも中途半端になる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "計画性", "weight": 3, "display_order": 94, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q095", "question": "危険を感じにくく、高いところや熱いものに対して注意が薄い", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "危険認知", "weight": 4, "display_order": 95, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q096", "question": "文字を書くのが極端に遅い、または読みにくい字を書く", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "書字", "weight": 3, "display_order": 96, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q097", "question": "「やります」と言ったのに、翌日には忘れていることがある", "context_group": "work", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "約束忘れ", "weight": 4, "display_order": 97, "enabled": true, "status": "published", "scope": "relationship", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q098", "question": "混雑した場所で人やモノにぶつかりやすい", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "空間認知", "weight": 3, "display_order": 98, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q099", "question": "身だしなみに無頓着で、シャツが出ていたり汚れに気づかない", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "身だしなみ", "weight": 3, "display_order": 99, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"id": "Q100", "question": "疲れのサインを自分で気づけず、限界まで頑張って倒れる", "context_group": "all", "my_role": "all", "target_role": "all", "environment": "all", "category": "行動パターン", "subcategory": "自己認知", "weight": 5, "display_order": 100, "enabled": true, "status": "published", "scope": "common", "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "オーダーを2つ以上同時に受けると、1つを忘れてしまう", "environment": "飲食", "category": "注意・集中", "subcategory": "同時処理", "weight": 5, "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 1}, "id": "Q101", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 101, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "ピーク時の複数テーブル対応で、配膳先を間違える", "environment": "飲食", "category": "注意・集中", "subcategory": "空間記憶", "weight": 4, "result_mapping": {"情報整理支援型": 2, "環境最適化型": 1}, "id": "Q102", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 102, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "新メニューの説明を覚えるのに、他のスタッフより時間がかかる", "environment": "飲食", "category": "指示理解", "subcategory": "新規学習", "weight": 4, "result_mapping": {"情報整理支援型": 3}, "id": "Q103", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 103, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "食器が割れる音やオーダーコール音に、体がビクッとなる", "environment": "飲食", "category": "感覚過敏", "subcategory": "音", "weight": 4, "result_mapping": {"環境最適化型": 3}, "id": "Q104", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 104, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "レジ対応中に話しかけられると、金額を打ち間違える", "environment": "飲食", "category": "注意・集中", "subcategory": "割込み", "weight": 4, "result_mapping": {"情報整理支援型": 2, "環境最適化型": 1}, "id": "Q105", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 105, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "お客様の「適当に見繕って」という注文に対応できず固まる", "environment": "飲食", "category": "指示理解", "subcategory": "曖昧指示", "weight": 5, "result_mapping": {"構造化サポート型": 3}, "id": "Q106", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 106, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "閉店作業の手順を毎回確認しないと抜けが出る", "environment": "飲食", "category": "行動パターン", "subcategory": "手順記憶", "weight": 3, "result_mapping": {"構造化サポート型": 3}, "id": "Q107", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 107, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "混雑時にお客様同士のトラブルが起きると、どう対応していいかわからず固まる", "environment": "飲食", "category": "社会性", "subcategory": "臨機応変", "weight": 4, "result_mapping": {"変化予測支援型": 2, "対話調整型": 2}, "id": "Q108", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 108, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "商品の陳列場所が変わると、お客様に聞かれても案内できない", "environment": "接客", "category": "変化対応", "subcategory": "環境変化", "weight": 4, "result_mapping": {"変化予測支援型": 2, "構造化サポート型": 1}, "id": "Q109", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 109, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "レジ打ちとお客様対応を同時にこなせず、列が詰まってしまう", "environment": "接客", "category": "注意・集中", "subcategory": "マルチタスク", "weight": 5, "result_mapping": {"情報整理支援型": 3}, "id": "Q110", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 110, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "セール期間の価格変更を覚えきれず、誤った金額を伝える", "environment": "接客", "category": "指示理解", "subcategory": "情報更新", "weight": 4, "result_mapping": {"情報整理支援型": 2, "構造化サポート型": 2}, "id": "Q111", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 111, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "クレーム対応時に声が震えたり、涙が出てしまう", "environment": "接客", "category": "感情調整", "subcategory": "ストレス反応", "weight": 5, "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "id": "Q112", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 112, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "マニュアル外の質問をされると、自分で判断できず毎回上司を呼ぶ", "environment": "接客", "category": "社会性", "subcategory": "判断力", "weight": 3, "result_mapping": {"構造化サポート型": 3}, "id": "Q113", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 113, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "オープンオフィスの雑談が耳に入り、自分の作業に集中できない", "environment": "オフィス", "category": "感覚過敏", "subcategory": "音", "weight": 5, "result_mapping": {"環境最適化型": 3}, "id": "Q114", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 114, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "会議で複数人が同時に発言すると、誰の意見も追えなくなる", "environment": "オフィス", "category": "注意・集中", "subcategory": "情報処理", "weight": 4, "result_mapping": {"情報整理支援型": 3}, "id": "Q115", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 115, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "メールの返信優先順位がつけられず、重要なものを後回しにしてしまう", "environment": "オフィス", "category": "注意・集中", "subcategory": "優先順位", "weight": 4, "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 1}, "id": "Q116", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 116, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "デスク周りが書類で埋まり、必要な資料をすぐに見つけられない", "environment": "オフィス", "category": "行動パターン", "subcategory": "整理整頓", "weight": 3, "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "id": "Q117", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 117, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "電話応対で相手の名前や要件を聞き取れず、何度も聞き返す", "environment": "オフィス", "category": "コミュニケーション", "subcategory": "聴覚処理", "weight": 4, "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "id": "Q118", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 118, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "ライン作業のスピードについていけず、隣の工程に遅れを出す", "environment": "工場", "category": "行動パターン", "subcategory": "処理速度", "weight": 5, "result_mapping": {"環境最適化型": 2, "構造化サポート型": 2}, "id": "Q119", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 119, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "作業中に安全確認の手順を飛ばしてしまうことがある", "environment": "工場", "category": "注意・集中", "subcategory": "安全確認", "weight": 5, "result_mapping": {"構造化サポート型": 3}, "id": "Q120", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 120, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "機械の警告音や工場内の騒音で頭痛や疲労を訴える", "environment": "工場", "category": "感覚過敏", "subcategory": "音", "weight": 4, "result_mapping": {"環境最適化型": 3}, "id": "Q121", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 121, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "製品の微妙な色の違いや傷を見分ける検品作業が極端に遅い", "environment": "工場", "category": "行動パターン", "subcategory": "視覚処理", "weight": 3, "result_mapping": {"環境最適化型": 2, "情報整理支援型": 1}, "id": "Q122", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 122, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "患者や利用者の名前と顔が一致せず、呼び間違えることがある", "environment": "医療", "category": "注意・集中", "subcategory": "記憶", "weight": 4, "result_mapping": {"情報整理支援型": 3}, "id": "Q123", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 123, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "申し送り事項を口頭で伝えられると、重要な部分を聞き逃す", "environment": "医療", "category": "指示理解", "subcategory": "聴覚入力", "weight": 5, "result_mapping": {"情報整理支援型": 3, "構造化サポート型": 1}, "id": "Q124", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 124, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "ナースコールと処置を同時に対応しようとして、両方とも中途半端になる", "environment": "医療", "category": "注意・集中", "subcategory": "マルチタスク", "weight": 5, "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "id": "Q125", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 125, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "利用者の急変時にパニックになり、マニュアル通りに動けない", "environment": "医療", "category": "変化対応", "subcategory": "緊急対応", "weight": 5, "result_mapping": {"変化予測支援型": 3, "構造化サポート型": 1}, "id": "Q126", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 126, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "教室のざわつきの中で、特定の生徒の発言を聞き取れない", "environment": "教育", "category": "感覚過敏", "subcategory": "音", "weight": 4, "result_mapping": {"環境最適化型": 3}, "id": "Q127", "context_group": "school", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 127, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "授業の準備と生徒対応を並行できず、授業開始が遅れる", "environment": "教育", "category": "注意・集中", "subcategory": "マルチタスク", "weight": 4, "result_mapping": {"情報整理支援型": 2, "構造化サポート型": 2}, "id": "Q128", "context_group": "school", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 128, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "保護者面談で想定外の質問をされると、言葉に詰まって沈黙してしまう", "environment": "教育", "category": "コミュニケーション", "subcategory": "臨機応変", "weight": 4, "result_mapping": {"対話調整型": 3}, "id": "Q129", "context_group": "school", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 129, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "Slackの通知が常に鳴っている環境で、コードに集中できない", "environment": "IT", "category": "感覚過敏", "subcategory": "通知", "weight": 4, "result_mapping": {"環境最適化型": 3}, "id": "Q130", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 130, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "仕様変更が入ると、変更箇所以外の部分まで不安になり全体を確認し直す", "environment": "IT", "category": "変化対応", "subcategory": "変更不安", "weight": 4, "result_mapping": {"変化予測支援型": 3, "構造化サポート型": 1}, "id": "Q131", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 131, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "コードレビューで指摘を受けると、人格を否定されたように感じる", "environment": "IT", "category": "感情調整", "subcategory": "批判感受性", "weight": 4, "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "id": "Q132", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 132, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "お客様の「いい感じに」という要望が理解できず、具体的に聞き返す", "environment": "美容", "category": "指示理解", "subcategory": "曖昧指示", "weight": 5, "result_mapping": {"構造化サポート型": 3}, "id": "Q133", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 133, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "カット中にお客様と会話しながら手を動かすと、切りすぎてしまう", "environment": "美容", "category": "注意・集中", "subcategory": "同時処理", "weight": 5, "result_mapping": {"情報整理支援型": 2, "環境最適化型": 2}, "id": "Q134", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 134, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "薬剤の匂いに敏感で、長時間の施術後に体調を崩す", "environment": "美容", "category": "感覚過敏", "subcategory": "嗅覚", "weight": 4, "result_mapping": {"環境最適化型": 3}, "id": "Q135", "context_group": "work", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 135, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "家事の途中で別の家事を始め、どれも中途半端になる", "environment": "家庭", "category": "注意・集中", "subcategory": "切替", "weight": 4, "result_mapping": {"情報整理支援型": 3}, "id": "Q136", "context_group": "family", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 136, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "子どもの泣き声や生活音に過剰に反応し、イライラが止まらない", "environment": "家庭", "category": "感覚過敏", "subcategory": "音", "weight": 4, "result_mapping": {"環境最適化型": 3}, "id": "Q137", "context_group": "family", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 137, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "買い物リストを作らないと、必要なものを買い忘れる", "environment": "家庭", "category": "行動パターン", "subcategory": "計画性", "weight": 3, "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "id": "Q138", "context_group": "family", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 138, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "料理の複数工程を同時に進めると、焦がしたり味付けを忘れたりする", "environment": "家庭", "category": "注意・集中", "subcategory": "同時処理", "weight": 4, "result_mapping": {"情報整理支援型": 3}, "id": "Q139", "context_group": "family", "my_role": "all", "target_role": "all", "scope": "environment", "status": "published", "enabled": true, "display_order": 139, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "何度教えても報告のタイミングが掴めず、事後報告ばかりになる", "context_group": "work", "my_role": "上司", "target_role": "部下", "category": "コミュニケーション", "subcategory": "報連相", "weight": 5, "result_mapping": {"対話調整型": 2, "構造化サポート型": 2}, "id": "Q140", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 140, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "褒めても反応が薄く、伝わっているのかわからない", "context_group": "work", "my_role": "上司", "target_role": "部下", "category": "コミュニケーション", "subcategory": "感情表出", "weight": 3, "result_mapping": {"対話調整型": 3}, "id": "Q141", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 141, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "注意すると翌日から急に距離を置かれ、必要な相談もしてこなくなる", "context_group": "work", "my_role": "上司", "target_role": "部下", "category": "感情調整", "subcategory": "対人回避", "weight": 4, "result_mapping": {"対話調整型": 3, "環境最適化型": 1}, "id": "Q142", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 142, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "任せた仕事の進捗を聞くまで一切共有してこない", "context_group": "work", "my_role": "上司", "target_role": "部下", "category": "社会性", "subcategory": "自発報告", "weight": 4, "result_mapping": {"構造化サポート型": 3}, "id": "Q143", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 143, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "指示の意図がわからなくても質問できず、見当違いの方向に進んでしまう", "context_group": "work", "my_role": "部下", "target_role": "上司", "category": "コミュニケーション", "subcategory": "質問困難", "weight": 5, "result_mapping": {"対話調整型": 3, "構造化サポート型": 1}, "id": "Q144", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 144, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "口頭で「いい感じにまとめて」と言われても、完成イメージが共有できない", "context_group": "work", "my_role": "部下", "target_role": "上司", "category": "指示理解", "subcategory": "曖昧指示", "weight": 5, "result_mapping": {"構造化サポート型": 3}, "id": "Q145", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 145, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "フィードバックの「もう少し工夫して」が何を指しているかわからない", "context_group": "work", "my_role": "部下", "target_role": "上司", "category": "指示理解", "subcategory": "抽象指示", "weight": 4, "result_mapping": {"構造化サポート型": 3, "情報整理支援型": 1}, "id": "Q146", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 146, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "雑談の輪に入れず、昼休みをいつも一人で過ごしている", "context_group": "work", "my_role": "同僚", "target_role": "同僚", "category": "社会性", "subcategory": "集団参加", "weight": 3, "result_mapping": {"対話調整型": 2, "環境最適化型": 2}, "id": "Q147", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 147, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "共同作業で自分の担当範囲を超えて手を出し、相手を困らせる", "context_group": "work", "my_role": "同僚", "target_role": "同僚", "category": "社会性", "subcategory": "境界認識", "weight": 3, "result_mapping": {"構造化サポート型": 3}, "id": "Q148", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 148, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "自分のやり方と違うと指摘せずにはいられず、衝突することがある", "context_group": "work", "my_role": "同僚", "target_role": "同僚", "category": "こだわり", "subcategory": "方法固執", "weight": 4, "result_mapping": {"構造化サポート型": 2, "対話調整型": 2}, "id": "Q149", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 149, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "何度言っても朝の支度が一人でできず、毎朝声をかけ続ける必要がある", "context_group": "family", "my_role": "親", "target_role": "子ども", "category": "行動パターン", "subcategory": "段取り", "weight": 5, "result_mapping": {"構造化サポート型": 3, "情報整理支援型": 1}, "id": "Q150", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 150, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "宿題に取りかかるまでに極端に時間がかかり、結局寝る時間になる", "context_group": "family", "my_role": "親", "target_role": "子ども", "category": "注意・集中", "subcategory": "開始困難", "weight": 5, "result_mapping": {"情報整理支援型": 3}, "id": "Q151", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 151, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "学校であったことを聞いても「忘れた」「別に」しか返ってこない", "context_group": "family", "my_role": "親", "target_role": "子ども", "category": "コミュニケーション", "subcategory": "言語化困難", "weight": 4, "result_mapping": {"対話調整型": 3}, "id": "Q152", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 152, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "友達との約束の時間や場所を間違えて、トラブルになることがある", "context_group": "family", "my_role": "親", "target_role": "子ども", "category": "注意・集中", "subcategory": "情報管理", "weight": 4, "result_mapping": {"情報整理支援型": 2, "構造化サポート型": 2}, "id": "Q153", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 153, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "話を聞いてほしいだけなのに、すぐ解決策を提案してくる", "context_group": "family", "my_role": "配偶者", "target_role": "配偶者", "category": "コミュニケーション", "subcategory": "共感応答", "weight": 4, "result_mapping": {"対話調整型": 3}, "id": "Q154", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 154, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "頼んだ家事を「あとでやる」と言ったまま、何日も忘れている", "context_group": "family", "my_role": "配偶者", "target_role": "配偶者", "category": "行動パターン", "subcategory": "先延ばし", "weight": 4, "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "id": "Q155", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 155, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "記念日や約束を忘れることが多く、悪気がないのはわかるが傷つく", "context_group": "family", "my_role": "配偶者", "target_role": "配偶者", "category": "注意・集中", "subcategory": "予定管理", "weight": 3, "result_mapping": {"情報整理支援型": 3}, "id": "Q156", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 156, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "授業中に立ち歩いたり、椅子をガタガタさせて座っていられない", "context_group": "school", "my_role": "先生", "target_role": "生徒", "category": "行動パターン", "subcategory": "多動", "weight": 5, "result_mapping": {"環境最適化型": 3}, "id": "Q157", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 157, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "板書を写すスピードが極端に遅く、ノートがいつも途中で終わっている", "context_group": "school", "my_role": "先生", "target_role": "生徒", "category": "行動パターン", "subcategory": "書字処理", "weight": 4, "result_mapping": {"情報整理支援型": 2, "構造化サポート型": 2}, "id": "Q158", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 158, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "グループ活動で自分の役割がわからず、ぼーっとしていることがある", "context_group": "school", "my_role": "先生", "target_role": "生徒", "category": "社会性", "subcategory": "役割理解", "weight": 4, "result_mapping": {"構造化サポート型": 3}, "id": "Q159", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 159, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "LINEの返信が極端に遅いか、逆に大量のメッセージを連続で送ってくる", "context_group": "friend", "my_role": "友人", "target_role": "友人", "category": "コミュニケーション", "subcategory": "テンポ", "weight": 3, "result_mapping": {"対話調整型": 3}, "id": "Q160", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 160, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "約束の時間にいつも遅れてくるが、本人は悪いと思っていない様子", "context_group": "friend", "my_role": "友人", "target_role": "友人", "category": "行動パターン", "subcategory": "時間感覚", "weight": 3, "result_mapping": {"構造化サポート型": 2, "情報整理支援型": 2}, "id": "Q161", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 161, "answer_options": ["よくある", "少しある", "ほぼない"]}, {"question": "集まりの場で一人だけ空気と違う発言をして、場が微妙になる", "context_group": "friend", "my_role": "友人", "target_role": "友人", "category": "社会性", "subcategory": "場の空気", "weight": 3, "result_mapping": {"対話調整型": 3}, "id": "Q162", "scope": "relationship", "environment": "all", "status": "published", "enabled": true, "display_order": 162, "answer_options": ["よくある", "少しある", "ほぼない"]}];
+const __RESULT_TYPES__=[{"id": "info_organize", "name": "情報整理支援型", "icon": "📋", "color": "#3D78F2", "summary": "情報の整理や優先順位づけに特性があるタイプ", "description": "このタイプの方は、複数の情報を同時に処理したり、優先順位をつけることに特性があります。一つずつ順番に伝えることで、本来の力を発揮しやすくなります。", "tips": ["指示は1つずつ、短く具体的に伝える", "重要な情報はメモやリストで視覚化する", "「いつまでに・何を・どこまで」を明確にする", "確認の声かけをこまめに行う", "マニュアルやチェックリストを活用する"], "strengths": ["集中力", "正確性", "丁寧さ"]}, {"id": "structured", "name": "構造化サポート型", "icon": "🧩", "color": "#7C3AED", "summary": "手順やルールの明確化で力を発揮するタイプ", "description": "このタイプの方は、明確な手順やルールがあると安心して動けます。曖昧な指示よりも、具体的な手順書や決まった流れを好みます。", "tips": ["作業手順を明文化して渡す", "例外が発生したときの対処法を事前に伝える", "「だいたい」「適当に」を避け、具体的な基準を示す", "変更がある場合は事前に予告する", "得意なルーティン作業を任せる"], "strengths": ["正確さ", "継続力", "責任感"]}, {"id": "dialogue", "name": "対話調整型", "icon": "💬", "color": "#059669", "summary": "会話や対人場面での伝え方に工夫が効くタイプ", "description": "このタイプの方は、コミュニケーションの場面で特性が出やすい傾向があります。伝え方を少し工夫するだけで、やり取りがスムーズになります。", "tips": ["比喩や皮肉を避け、ストレートに伝える", "相手の話を最後まで聞いてから返す", "表情だけでなく言葉でも気持ちを伝える", "1対1の落ち着いた環境で話す", "相手のペースに合わせてゆっくり話す"], "strengths": ["誠実さ", "独自の視点", "深い思考"]}, {"id": "change_predict", "name": "変化予測支援型", "icon": "🔄", "color": "#D97706", "summary": "変化への見通しを事前共有すると安心するタイプ", "description": "このタイプの方は、予定変更や新しい状況に対してストレスを感じやすい傾向があります。事前の情報共有と段階的な変化で、安心して対応できます。", "tips": ["予定変更は可能な限り早めに伝える", "変更の理由と次のステップを一緒に説明する", "「いつもと違うこと」を事前に予告する", "急な変更時は代替案を一緒に考える", "安心できるルーティンを一つ残しておく"], "strengths": ["計画性", "慎重さ", "安定感"]}, {"id": "env_optimize", "name": "環境最適化型", "icon": "🌿", "color": "#DC2626", "summary": "物理的・感覚的な環境調整で力を発揮するタイプ", "description": "このタイプの方は、音・光・温度などの環境刺激に敏感な傾向があります。作業環境を少し調整するだけで、集中力やパフォーマンスが大きく変わります。", "tips": ["静かな作業スペースを確保する", "蛍光灯の直下を避ける・照明を調整する", "イヤーマフやノイズキャンセリングを許可する", "休憩を定期的に取れるようにする", "刺激の少ない時間帯に重要な業務を入れる"], "strengths": ["観察力", "感受性", "繊細さ"]}];
+init();
+</script>
+</body>
+</html>
